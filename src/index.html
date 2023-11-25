@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>AlgorithmRSA</title>
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<main>
+  <h1 class="title">AlgorithmRSA</h1>
+  <div>
+    <label id="labelP">Введіть P</label>
+    <input id="inputP"/>
+  </div>
+  <div>
+    <label id="labelQ">Введіть Q</label>
+    <input id="inputQ"/>
+  </div>
+  <button onclick="algorithmRSA()"> Знайти ключі</button>
+  <div>
+    <label id="privateKeyLabel"></label>
+  </div>
+  <div>
+    <label id="publickKeyLabel"></label>
+  </div>
+  <div>
+    <label id="labelText">Введіть текст (укр)</label>
+    <input id="inputText"/>
+  </div>
+  <button onclick="encryption()">Зашифрувати текст</button>
+  <div>
+    <label id="cipherTextEnter">Зашифрований текст: </label>
+    <label id="cipherTextLabel"></label>
+  </div>
+  <button onclick="decryption()">Розшифрувати текст</button>
+  <div>
+    <label id="decryptionTextEnter"> Розшифрований текст: </label>
+    <label id="decryptionTextLabel"></label>
+  </div>
+</main>
+
+
+
+<script src="scripts/rsa.js"></script>
+</body>
+</html>
