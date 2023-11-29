@@ -1,27 +1,35 @@
 let p;
 let q;
 let n;
-let nEuler;
+let phiN;
 let e;
 let d;
+let tmpD;
 let privateKey;
 let publickKey;
 let alphabet = ['а', 'б', 'в', 'г', 'ґ', 'д', 'е', 'є', 'ж', 'з', 'и', 'і', 'ї',
   'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч',
-  'ш', 'щ', 'ь', 'ю', 'я'];
+  'ш', 'щ', 'ь', 'ю', 'я', ' ', '.', ',', '?', '!', '-',];
 
 function algorithmRSA() {
+  n = 0;
+  phiN = 0;
+  e = 0;
+  d = 0;
+
   if (inputP.value === "" || inputQ.value === "") {
     alert("Введіть значення");
   } else {
     console.log("=========================");
 
+    //Щоб число точно було простим
     p = parseInt(inputP.value);
     while (!simplicityCheck(p)) {
       p++;
     }
     console.log("p = " + p);
 
+    //Щоб число точно було простим
     q = parseInt(inputQ.value);
     while (!simplicityCheck(q)) {
       q++;
@@ -31,17 +39,43 @@ function algorithmRSA() {
     n = p * q;
     console.log("n = " + n);
 
-    nEuler = (p - 1) * (q - 1);
-    console.log("nEuler = " + nEuler);
-    for (let i = nEuler; i > 2; i--) {
+    phiN = (p - 1) * (q - 1);
+    console.log("phiN = " + phiN);
+
+    //Ділення на щоб відкрита експонента "е" не було близько до phiN
+    for (let i = Math.round(phiN/2); i > 2; i--) {
       if (simplicityCheck(i) === true) {
         e = i;
-        console.log("e = " + e);
-        break;
+        //console.log("e = " + e);
+        //Шукаємо закриту експоненту "d" вкладеним циклом бо часто сама перша е не підходить
+        for (let i = 2; i < phiN; i++) {
+          tmpD = (phiN * i + 1) / e;
+          if (Number.isInteger(tmpD) === true) {
+            //console.log("tmpd = " + tmpD);
+            if (tmpD !== e && simplicityCheck(tmpD) === true && (e * tmpD) % phiN
+                === 1) {
+              //console.log("e*d % phiN = " + (e * tmpD) % phiN);
+              d = tmpD;
+              //console.log("d = " + d);
+              break;
+            }
+          }
+        }
+        if (d !== 0 && d !== e) {
+          break;
+        }
       }
     }
+    if (d === 0) {
+      return alert("Помилка! Неможливо знайти ключ");
+    }
 
-    euclidAlgorithm(nEuler, e, 0, 1);
+    console.log("e = " + e);
+    console.log("d = " + d);
+    console.log("e*d = " + e * d);
+    //По формулі (e * d) % phiN має дорівнювати 1
+    console.log("e*d % phiN = " + (e * d) % phiN);
+
     privateKey = "Приватний ключ: ( " + d + ", " + n + " )";
     publickKey = "Публічний ключ: ( " + e + ", " + n + " )";
     document.getElementById("privateKeyLabel").textContent = privateKey;
@@ -50,43 +84,16 @@ function algorithmRSA() {
 }
 
 function simplicityCheck(number) {
+  //Перевірка числа на простоту
   if (number <= 1) {
     return false;
   }
-  for (let i = 2; i <= Math.sqrt(number); i++) {
+  for (let i = 2; i <= Math.floor(Math.sqrt(number)); i++) {
     if (number % i === 0) {
       return false;
     }
   }
   return true;
-}
-
-function euclidAlgorithm(a, b, t1, t2) {
-  let remainder = 0;
-  let quotient = 0;
-  let t = 0;
-n
-  if (b === 0) {
-    if(t1<0){
-      t1=t1+nEuler;
-    }
-    d = t1;
-    console.log(
-        "a=" + a + " b=" + b + " q=" + quotient + " r=" + remainder + " t1="
-        + t1 + " t2=" + t2 + " t=" + t);
-    console.log("d=" + d);
-
-  } else {
-    quotient = Math.floor(a / b);
-    remainder = a % b;
-    t = t1 - (t2 * quotient);
-
-    console.log(
-        "a=" + a + " b=" + b + " q=" + quotient + " r=" + remainder + " t1="
-        + t1 + " t2=" + t2 + " t=" + t);
-    euclidAlgorithm(b, remainder, t2, t);
-
-  }
 }
 
 function encryption() {
@@ -103,6 +110,7 @@ function encryption() {
       for (let i = 0; i < clearText.length; i++) {
         let letter = clearText[i];
         let letterIndex;
+        //Переведення букв і знаків в числа по індексу масива
         for (let j = 0; j < alphabet.length; j++) {
           if (letter === alphabet[j]) {
             letterIndex = j;
@@ -112,8 +120,10 @@ function encryption() {
         if (letterIndex == null) {
           return alert("Введіть українською");
         }
-        let cipherLetter = Math.pow(letterIndex, e) % n;
-        console.log(" m^e = " + Math.pow(letterIndex, e));
+        //Переведенн всіх чисел в BigInt щоб зберегти правильне значення дуже великого числа
+        let exponentiation = (BigInt(letterIndex) ** BigInt(e));
+        console.log(letterIndex + "^e = " + exponentiation);
+        let cipherLetter = exponentiation % BigInt(n);
         console.log(letter + " = " + letterIndex + " = " + cipherLetter);
         cipherText.push(cipherLetter);
       }
@@ -121,7 +131,6 @@ function encryption() {
       document.getElementById("cipherTextLabel").textContent = cipherText;
     }
   }
-
 }
 
 function decryption() {
@@ -131,20 +140,21 @@ function decryption() {
     console.log("==decryption==");
     let decryptionText = [];
     let cipherText = (cipherTextLabel.textContent).split(",");
-    console.log(cipherText);
     for (let i = 0; i < cipherText.length; i++) {
       let decryptionLetter;
-      let decryptionLetterIndex = Math.pow(cipherText[i], d) % n;
-      console.log(" с^d = " + Math.pow(cipherText[i], d));
+      //Обратне розшифрування по формулі тоже з BigInt
+      let exponentiation = (BigInt(cipherText[i]) ** BigInt(d));
+      console.log(cipherText[i] + "^d = " + exponentiation);
+      let decryptionLetterIndex = exponentiation % BigInt(n);
       console.log(decryptionLetterIndex);
+      //Знаходження в масиві індекса з отриманим значенням
       for (let j = 0; j < alphabet.length; j++) {
-        if (decryptionLetterIndex === j) {
+        if (decryptionLetterIndex === BigInt(j)) {
           decryptionLetter = alphabet[j];
           break;
         }
       }
       decryptionText.push(decryptionLetter);
-
     }
     console.log(decryptionText);
     document.getElementById("decryptionTextLabel").textContent = decryptionText;
